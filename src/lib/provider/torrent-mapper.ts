@@ -42,8 +42,9 @@ export function buildMagnetLink(
 
   let magnet = `magnet:?xt=urn:btih:${result.infoHash}`;
 
-  if (result.name) {
-    magnet += `&dn=${encodeURIComponent(result.name)}`;
+  const torrentName = result.folderName ?? result.filename;
+  if (torrentName) {
+    magnet += `&dn=${encodeURIComponent(torrentName)}`;
   }
 
   if (result.sources) {

@@ -62,7 +62,8 @@ function init() {
     function buildMagnetLink(result: AIOStreamsSearchApiResult): string | null {
       if (!result.infoHash) return null;
       let magnet = `magnet:?xt=urn:btih:${result.infoHash}`;
-      if (result.name) magnet += `&dn=${encodeURIComponent(result.name)}`;
+      const torrentName = result.folderName ?? result.filename;
+      if (torrentName) magnet += `&dn=${encodeURIComponent(torrentName)}`;
       if (result.sources) {
         result.sources.forEach((src) => {
           magnet += `&tr=${encodeURIComponent(src)}`;
