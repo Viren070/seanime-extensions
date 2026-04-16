@@ -1,0 +1,22 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "pull-request-title-pattern": "chore: release ${version}",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "src/extensions/aiostreams-plugin/manifest.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "src/extensions/aiostreams-torrent-provider/manifest.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}
