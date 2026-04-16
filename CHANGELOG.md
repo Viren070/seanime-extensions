@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/Viren070/seanime-extensions/compare/v0.1.4...v0.2.0) (2026-04-16)
+
+
+### Features
+
+* **aiostreams-plugin:** close results view on navigation away from entry page ([93d55b1](https://github.com/Viren070/seanime-extensions/commit/93d55b18ca5d0fabe000ff42d8b509e5b8e2acb6))
+* **aiostreams-plugin:** configurable download location and add progress to downloads ([29e8c2f](https://github.com/Viren070/seanime-extensions/commit/29e8c2f829bc9c2629f2c23e384f3e25bf49e222))
+
 ## [0.1.4](https://github.com/Viren070/seanime-extensions/compare/v0.1.3...v0.1.4) (2026-04-16)
 
 
