@@ -347,7 +347,7 @@ html,body{height:100%;width:100%;overflow:hidden;background-color:transparent !i
 .card-name{font-size:14px;font-weight:500;line-height:1.45;color:#e2e8f0;white-space:pre-line;word-break:break-word}
 .card-desc{font-size:13px;line-height:1.5;color:rgba(255,255,255,0.58);white-space:pre-line;word-break:break-word;margin-top:4px}
 .card-actions{display:flex;gap:5px;padding:0 10px 10px}
-.btn-p{flex:1;height:42px;border-radius:6px;border:none;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;background:rgb(97,82,223);color:#fff;position:relative;overflow:hidden;transition:opacity .12s;font-family:inherit}
+.btn-p{flex:1;height:38px;border-radius:6px;border:none;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;background:rgb(97,82,223);color:#fff;position:relative;overflow:hidden;transition:opacity .12s;font-family:inherit}
 .btn-p:disabled{opacity:.5;cursor:not-allowed}
 .btn-p:not(:disabled):hover{opacity:.82}
 .btn-p .lbl{display:inline-flex;align-items:center;gap:7px}
@@ -372,7 +372,7 @@ html,body{height:100%;width:100%;overflow:hidden;background-color:transparent !i
 .ov-sec-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.28);letter-spacing:.09em;text-transform:uppercase;margin-bottom:8px}
 .ov-item{padding:9px 11px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:5px;background:rgba(255,255,255,0.018)}
 .ov-item-title{font-size:12px;font-weight:600;color:#e2e8f0}
-.ov-item-desc{font-size:12px;color:rgba(255,255,255,0.48);margin-top:2px;line-height:1.45;word-break:break-word}
+.ov-item-desc{font-size:12px;color:rgba(255,255,255,0.48);margin-top:2px;line-height:1.45;white-space:pre-line;word-break:break-word}
 .ov-item.is-err .ov-item-title{color:#f87171}
 </style>
 </head>
@@ -499,7 +499,7 @@ function render(s){
     if(sc>0)parts.push(sc+' stat'+(sc!==1?'s':''));
     if(!parts.length&&s.timeTakenMs!=null)parts.push('Details');
     if(parts.length){
-      FB.style.display='flex';FB.textContent=parts.join(' \u00b7')+' \u203a';
+      FB.style.display='flex';FB.textContent=parts.join(' \u00b7 ')+' \u203a';
       FB.className='footer-btn'+(ec>0?' err':'');
     } else {
       FB.style.display='none';
