@@ -50,7 +50,7 @@
       {
         "type": "switch",
         "name": "useExternalPlayer",
-        "label": "Play streams using external player instead of built-in player",
+        "label": "Play streams using your external player link instead of your desktop media player.",
         "default": "false"
       },
       {
