@@ -640,6 +640,12 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       }, ANIM_MS + 20);
     }
 
+    ctx.screen.onNavigate((e) => {
+      if (e.pathname !== "/entry") {
+        hideResultsAnimated();
+      }
+    });
+
     resultsWv.channel.on("play", (data: { index: number }) => {
       const result = wvState.get().results[data.index];
       if (!result?.url) return;
