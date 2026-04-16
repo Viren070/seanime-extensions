@@ -1,0 +1,19 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "src/extensions/plugin/manifest.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "src/extensions/torrent/manifest.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}
