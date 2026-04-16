@@ -17,6 +17,8 @@ function init() {
       name: string | null;
       description: string | null;
       service: string | null;
+      filename: string | null;
+      folderName: string | null;
       cached: boolean | null;
       resolution: string | null;
       releaseGroup: string | null;
@@ -51,6 +53,7 @@ function init() {
       errors: StatEntry[];
       statistics: StatEntry[];
       lookup: LookupInfo | null;
+      sessionId: string;
     }
 
     interface ParsedManifestCredentials {
@@ -83,6 +86,8 @@ function init() {
         description: r.description ?? null,
         service: r.service ?? null,
         cached: r.cached ?? null,
+        filename: r.filename ?? null,
+        folderName: r.folderName ?? null,
         resolution: r.parsedFile?.resolution ?? null,
         releaseGroup: r.parsedFile?.releaseGroup ?? null,
         addon: r.addon ?? null,
@@ -375,6 +380,9 @@ html,body{height:100%;width:100%;overflow:hidden;background-color:transparent !i
 .ov-item-title{font-size:12px;font-weight:600;color:#e2e8f0}
 .ov-item-desc{font-size:12px;color:rgba(255,255,255,0.48);margin-top:2px;line-height:1.45;white-space:pre-line;word-break:break-word}
 .ov-item.is-err .ov-item-title{color:#f87171}
+.dl-pct{font-size:9px;font-weight:800;line-height:1;letter-spacing:-.02em}
+.btn-i.dl-ok{color:#4ade80}.btn-i.dl-err{color:#f87171}
+.btn-i:disabled{opacity:.55;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -418,10 +426,11 @@ html,body{height:100%;width:100%;overflow:hidden;background-color:transparent !i
 </div>
 
 <script>
-var W=window.webview,rs=[],playIdx=-1,_d={timeTakenMs:null,fromCache:false,errors:[],statistics:[],lookup:null};
+var W=window.webview,rs=[],playIdx=-1,_d={timeTakenMs:null,fromCache:false,errors:[],statistics:[],lookup:null,sessionId:''},dlState={},_lastEpisodeInfo='';
 function esc(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmt(ms){return ms<1000?ms+'ms':(ms/1000).toFixed(1)+'s';}
 function close_(){W.send('close',{});}
+function updateDlBtn(i){var b=document.getElementById('dl-'+i);if(!b)return;var s=dlState[i];if(!s){b.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';b.disabled=false;b.className='btn-i';b.title='Download';return;}if(s.status==='downloading'){b.innerHTML='<span class="dl-pct">'+(s.percentage<1?'\u22ef':Math.round(s.percentage)+'%')+'</span>';b.disabled=true;b.className='btn-i';b.title=s.filename?'Downloading \u2014 '+s.filename:'Downloading...';return;}if(s.status==='completed'){b.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';b.disabled=false;b.className='btn-i dl-ok';b.title='Saved \u2014 '+s.filePath;return;}b.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>';b.disabled=false;b.className='btn-i dl-err';b.title=(s.error||'Download failed')+' \u2014 click to retry';}
 function play(i){
   if(playIdx!==-1)return;playIdx=i;
   var b=document.getElementById('pb-'+i);
@@ -433,12 +442,13 @@ function openExt(i){
   if(r&&r.externalUrl) window.open(r.externalUrl, '_blank');
 }
 function copyStream(i){var r=rs[i];if(!r)return;var t=r.url||r.magnetLink||'';if(t)W.send('copy-stream',{text:t});}
-function downloadStream(i){W.send('download',{index:i});}
+function downloadStream(i){if(dlState[i]&&dlState[i].status==='downloading')return;W.send('download',{index:i});}
 W.on('play-error',function(d){
   var idx=d&&d.index!=null?d.index:playIdx;playIdx=-1;
   var b=document.getElementById('pb-'+idx);
   if(b){b.disabled=false;b.classList.remove('loading');}
 });
+W.on('download-progress',function(d){if(d&&d.index!=null&&d.sessionId===_d.sessionId){dlState[d.index]=d;updateDlBtn(d.index);}});
 function openOverlay(){
   var html='';
   var lk=_d.lookup;
@@ -481,7 +491,7 @@ function render(s){
       SB=document.getElementById('sub'),CN=document.getElementById('cnt'),
       FT=document.getElementById('footer'),FTT=document.getElementById('footer-time'),
       FB=document.getElementById('footer-btn');
-  _d={timeTakenMs:s.timeTakenMs,fromCache:!!s.fromCache,errors:s.errors||[],statistics:s.statistics||[],lookup:s.lookup||null};
+  _d={timeTakenMs:s.timeTakenMs,fromCache:!!s.fromCache,errors:s.errors||[],statistics:s.statistics||[],lookup:s.lookup||null,sessionId:s.sessionId||''};
   if(s.episodeInfo)SB.textContent=s.episodeInfo;
   if(s.loading){
     L.style.display='flex';R.style.display='none';E.style.display='none';
@@ -514,7 +524,7 @@ function render(s){
     return;
   }
   ER.style.display='none';
-  rs=s.results||[];playIdx=-1;
+  rs=s.results||[];playIdx=-1;if(s.episodeInfo&&s.episodeInfo!==_lastEpisodeInfo){dlState={};_lastEpisodeInfo=s.episodeInfo;}
   if(rs.length===0){E.style.display='flex';R.style.display='none';CN.style.display='none';return;}
   E.style.display='none';
   CN.textContent=String(rs.length);CN.style.display='inline';
@@ -530,7 +540,7 @@ function render(s){
     if(isUrl){
       acts='<button class="btn-p" id="pb-'+i+'" onclick="play('+i+')"><span class="lbl">'+PLAY+' Play</span></button>';
       acts+='<button class="btn-i" onclick="copyStream('+i+')" title="Copy URL">'+COPY+'</button>';
-      acts+='<button class="btn-i" onclick="downloadStream('+i+')" title="Download">'+DL+'</button>';
+      acts+='<button class="btn-i" id="dl-'+i+'" onclick="downloadStream('+i+')" title="Download">'+DL+'</button>';
     } else if(isExt){
       acts='<button class="btn-p ext" onclick="openExt('+i+')"><span class="lbl">'+EXT+' Open in Browser</span></button>';
       acts+='<button class="btn-i" onclick="copyStream('+i+')" title="Copy URL">'+COPY+'</button>';
@@ -559,6 +569,8 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
 </html>`;
     }
 
+    let resultsSessionId = Math.random().toString(36).slice(2);
+
     const wvState = ctx.state<WebviewState>({
       results: [],
       loading: false,
@@ -569,6 +581,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       errors: [],
       statistics: [],
       lookup: null,
+      sessionId: resultsSessionId,
     });
 
     const pendingAnime = ctx.state<$app.AL_BaseAnime | null>(null);
@@ -576,6 +589,18 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       episodeNumber: number;
       aniDBEpisode: string;
     } | null>(null);
+
+    interface DownloadRecord {
+      index: number;
+      filename: string;
+      filePath: string;
+      status: "downloading" | "completed" | "error" | "cancelled";
+      error?: string;
+      startedAt: number;
+      completedAt?: number;
+    }
+    const activeDownloadIndices = new Set<number>();
+    const downloadRecords: DownloadRecord[] = [];
 
     const ANIM_MS = 280;
 
@@ -654,11 +679,17 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
     });
 
     resultsWv.channel.on("download", (data: { index: number }) => {
+      if (activeDownloadIndices.has(data.index)) return;
+
+      const sessionId = resultsSessionId;
       const result = wvState.get().results[data.index];
       const url = result?.url ?? result?.externalUrl;
       if (!url) return;
 
-      let filename = url.split("/").pop()?.split("?")[0]?.split("#")[0] ?? "";
+      let filename =
+        result.filename ??
+        url.split("/").pop()?.split("?")[0]?.split("#")[0] ??
+        "";
       if (!filename || !filename.includes(".")) {
         const sanitised = (result.name ?? "download").replace(
           /[/\\:*?"<>|]/g,
@@ -667,17 +698,73 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
         filename = sanitised + ".mp4";
       }
 
-      const filePath = $filepath.join($osExtra.downloadDir(), filename);
-      const downloadId = $downloader.download(url, filePath);
-      ctx.toast.success("Download started!");
+      const baseDir = result.folderName
+        ? $filepath.join(
+            resolveDownloadDir(),
+            result.folderName.replace(/[/\\:*?"<>|]/g, "_"),
+          )
+        : resolveDownloadDir();
+      const filePath = $filepath.join(baseDir, filename);
+      activeDownloadIndices.add(data.index);
 
-      $downloader.watch(
+      const record: DownloadRecord = {
+        index: data.index,
+        filename,
+        filePath,
+        status: "downloading",
+        startedAt: Date.now(),
+      };
+      downloadRecords.unshift(record);
+      if (downloadRecords.length > 8) downloadRecords.splice(8);
+
+      // Send initial state to webview immediately so the button updates
+      resultsWv.channel.send("download-progress", {
+        index: data.index,
+        sessionId,
+        status: "downloading",
+        percentage: 0,
+        filename,
+        filePath,
+      });
+      tray.update();
+
+      const downloadId = ctx.downloader.download(url, filePath);
+
+      ctx.downloader.watch(
         downloadId,
-        (progress: $downloader.DownloadProgress | undefined) => {
-          if (progress?.status === "completed") {
-            ctx.toast.success(`Downloaded: ${filename}`);
-          } else if (progress?.status === "error") {
-            ctx.toast.error("Download failed.");
+        (progress: $ui.DownloadProgress | undefined) => {
+          if (!progress) return;
+          const { percentage, speed, error } = progress;
+          const status = progress.status;
+
+          // Forward live progress to webview
+          resultsWv.channel.send("download-progress", {
+            index: data.index,
+            sessionId,
+            status,
+            percentage,
+            speed,
+            filename,
+            filePath,
+            error,
+          });
+
+          if (
+            status === "completed" ||
+            status === "error" ||
+            status === "cancelled"
+          ) {
+            activeDownloadIndices.delete(data.index);
+            record.status = status as DownloadRecord["status"];
+            record.completedAt = Date.now();
+            if (error) record.error = error;
+            tray.update();
+
+            if (status === "completed") {
+              ctx.toast.success(`Downloaded to: ${filePath}`);
+            } else if (status === "error") {
+              ctx.toast.error(`Download failed: ${error ?? "Unknown error"}`);
+            }
           }
         },
       );
@@ -826,6 +913,8 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       pendingAnime.set(anime);
       pendingEp.set({ episodeNumber, aniDBEpisode });
 
+      resultsSessionId = Math.random().toString(36).slice(2);
+      activeDownloadIndices.clear();
       wvState.set({
         results: [],
         loading: true,
@@ -836,6 +925,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
         errors: [],
         statistics: [],
         lookup: null,
+        sessionId: resultsSessionId,
       });
       showResults();
 
@@ -900,6 +990,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
           errors: [],
           statistics: [],
           lookup,
+          sessionId: resultsSessionId,
         });
         return;
       }
@@ -927,6 +1018,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
           errors: searchResponse.errors ?? [],
           statistics: searchResponse.statistics ?? [],
           lookup,
+          sessionId: resultsSessionId,
         });
       } catch (err: unknown) {
         console.error("Error fetching streams from AIOStreams:", err);
@@ -941,8 +1033,34 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
           errors: [],
           statistics: [],
           lookup,
+          sessionId: resultsSessionId,
         });
       }
+    }
+
+    function resolveDownloadDir(): string {
+      const pref = (
+        $getUserPreference("downloadLocation") ?? "$DOWNLOAD"
+      ).trim();
+      if (!pref) return $osExtra.downloadDir();
+
+      const replacements: Array<[string, () => string]> = [
+        ["$DOWNLOAD", () => $osExtra.downloadDir()],
+        ["$DESKTOP", () => $osExtra.desktopDir()],
+        ["$DOCUMENT", () => $osExtra.documentsDir()],
+        ["$HOME", () => $os.homeDir()],
+      ];
+
+      for (const [token, getBase] of replacements) {
+        if (pref.startsWith(token)) {
+          const base = getBase();
+          if (!base) continue;
+          const rest = pref.slice(token.length).replace(/^[/\\]/, "");
+          return rest ? $filepath.join(base, rest) : base;
+        }
+      }
+
+      return pref; // treat as an absolute path
     }
 
     function prefBool(key: string, def: boolean): boolean {

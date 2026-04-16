@@ -179,6 +179,11 @@ declare namespace $ui {
          * Video Core for controlling the built-in player
          */
         videoCore: VideoCore
+
+        /**
+         * File downloader
+         */
+        downloader: Downloader
     }
 
     interface State<T> {
@@ -1776,6 +1781,67 @@ declare namespace $ui {
          * @returns A promise that resolves to an array of files
          */
         getFiles(hash: string): Promise<string[]>
+    }
+
+    interface DownloadProgress {
+        id: string
+        url: string
+        destination: string
+        totalBytes: number
+        totalSize: number
+        speed: number
+        percentage: number
+        status: "downloading" | "completed" | "cancelled" | "error"
+        error?: string
+        lastUpdate: string
+        startTime: string
+    }
+
+    interface DownloadOptions {
+        timeout?: number
+        headers?: Record<string, string>
+    }
+
+    interface Downloader {
+        /**
+         * Starts a file download and returns a download ID.
+         * @param url - The URL to download from
+         * @param destination - The local file path to save to
+         * @param options - Optional timeout (seconds) and headers
+         * @returns The download ID
+         */
+        download(url: string, destination: string, options?: DownloadOptions): string
+
+        /**
+         * Watches a download's progress, calling the callback approximately every second.
+         * @param downloadId - The download ID returned by download()
+         * @param callback - Called with the current progress (undefined if not found)
+         * @returns A function to cancel the watch
+         */
+        watch(downloadId: string, callback: (progress: DownloadProgress | undefined) => void): () => void
+
+        /**
+         * Gets the current progress of a download.
+         * @param downloadId - The download ID
+         * @returns The current progress or null
+         */
+        getProgress(downloadId: string): DownloadProgress | null
+
+        /**
+         * Lists all downloads.
+         */
+        listDownloads(): DownloadProgress[]
+
+        /**
+         * Cancels a download.
+         * @param downloadId - The download ID
+         */
+        cancel(downloadId: string): void
+
+        /**
+         * Cancels all downloads.
+         */
+        cancelAll(): void
     }
 
     type Intent =
