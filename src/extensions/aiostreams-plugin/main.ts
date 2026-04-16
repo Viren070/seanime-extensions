@@ -54,6 +54,7 @@ function init() {
       statistics: StatEntry[];
       lookup: LookupInfo | null;
       sessionId: string;
+      autoPlay: boolean;
     }
 
     interface ParsedManifestCredentials {
@@ -496,6 +497,13 @@ function render(s){
   if(s.loading){
     L.style.display='flex';R.style.display='none';E.style.display='none';
     ER.style.display='none';CN.style.display='none';FT.style.display='none';
+    var lt=L.querySelector('span');if(lt)lt.textContent='Fetching streams\u2026';
+    return;
+  }
+  if(s.autoPlay&&!s.error&&s.results&&s.results.length>0){
+    var lt2=L.querySelector('span');if(lt2)lt2.textContent='Starting playback\u2026';
+    L.style.display='flex';R.style.display='none';E.style.display='none';
+    ER.style.display='none';CN.style.display='none';FT.style.display='none';
     return;
   }
   L.style.display='none';
@@ -582,6 +590,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       statistics: [],
       lookup: null,
       sessionId: resultsSessionId,
+      autoPlay: false,
     });
 
     const pendingAnime = ctx.state<$app.AL_BaseAnime | null>(null);
@@ -646,8 +655,8 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       }
     });
 
-    resultsWv.channel.on("play", (data: { index: number }) => {
-      const result = wvState.get().results[data.index];
+    function playStreamAtIndex(index: number): void {
+      const result = wvState.get().results[index];
       if (!result?.url) return;
       const anime = pendingAnime.get();
       const ep = pendingEp.get();
@@ -658,7 +667,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       if (useExt) {
         ctx.externalPlayerLink.open(result.url, anime.id, ep.episodeNumber);
         hideResultsAnimated();
-        resultsWv.channel.send("play-error", { index: data.index }); // Removes the loading spinner
+        resultsWv.channel.send("play-error", { index }); // Removes the loading spinner
         return;
       }
 
@@ -675,8 +684,16 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
         })
         .catch((err: Error) => {
           ctx.toast.error(`Playback error: ${err.message}`);
-          resultsWv.channel.send("play-error", { index: data.index });
+          resultsWv.channel.send("play-error", { index });
+          const st = wvState.get();
+          if (st.autoPlay) {
+            wvState.set({ ...st, autoPlay: false });
+          }
         });
+    }
+
+    resultsWv.channel.on("play", (data: { index: number }) => {
+      playStreamAtIndex(data.index);
     });
 
     resultsWv.channel.on("copy-stream", (data: { text: string }) => {
@@ -919,6 +936,8 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       pendingAnime.set(anime);
       pendingEp.set({ episodeNumber, aniDBEpisode });
 
+      const autoPlay = prefBool("autoPlayFirstStream", false);
+
       resultsSessionId = Math.random().toString(36).slice(2);
       activeDownloadIndices.clear();
       wvState.set({
@@ -932,6 +951,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
         statistics: [],
         lookup: null,
         sessionId: resultsSessionId,
+        autoPlay,
       });
       showResults();
 
@@ -997,7 +1017,11 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
           statistics: [],
           lookup,
           sessionId: resultsSessionId,
+          autoPlay: autoPlay && cachedResults.length > 0,
         });
+        if (autoPlay && cachedResults.length > 0) {
+          playStreamAtIndex(0);
+        }
         return;
       }
 
@@ -1025,7 +1049,11 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
           statistics: searchResponse.statistics ?? [],
           lookup,
           sessionId: resultsSessionId,
+          autoPlay: autoPlay && results.length > 0,
         });
+        if (autoPlay && results.length > 0) {
+          playStreamAtIndex(0);
+        }
       } catch (err: unknown) {
         console.error("Error fetching streams from AIOStreams:", err);
         const msg = err instanceof Error ? err.message : String(err);
@@ -1040,6 +1068,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
           statistics: [],
           lookup,
           sessionId: resultsSessionId,
+          autoPlay: false,
         });
       }
     }
@@ -1201,6 +1230,39 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
           }),
         );
       }
+    }
+
+    const attachAutoOpenObserver = (selector: string) => {
+      ctx.dom.observe(selector, (elements) => {
+        for (const el of elements) {
+          if (el.attributes["data-aio-observed"]) continue;
+          el.setAttribute("data-aio-observed", "1");
+
+          const mediaId = parseInt(
+            el.attributes["data-media-id"] ?? "0",
+            10,
+          );
+          const episodeNumber = parseInt(
+            el.attributes["data-episode-number"] ?? "0",
+            10,
+          );
+          if (!mediaId || !episodeNumber) continue;
+
+          el.addEventListener("click", () => {
+            const anime = $anilist.getAnime(mediaId);
+            if (!anime) {
+              ctx.toast.error("AIOStreams: Could not identify anime");
+              return;
+            }
+            fetchStreams(anime, episodeNumber, String(episodeNumber));
+          });
+        }
+      });
+    };
+
+    if (prefBool("autoOpenResults", false)) {
+      attachAutoOpenObserver("[data-episode-card]");
+      attachAutoOpenObserver("[data-episode-grid-item]");
     }
   });
 }
