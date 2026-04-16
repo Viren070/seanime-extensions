@@ -355,7 +355,7 @@ html,body{height:100%;width:100%;overflow:hidden;background-color:transparent !i
 .btn-p.loading::after{content:'';position:absolute;width:15px;height:15px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
 .btn-p.ext{background:rgba(8,110,146,.9)}
 .btn-p.p2p{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#e2e8f0}
-.btn-i{width:42px;height:42px;border-radius:6px;border:1px solid rgba(255,255,255,0.09);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.5);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s}
+.btn-i{width:38px;height:38px;border-radius:6px;border:1px solid rgba(255,255,255,0.09);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.5);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s}
 .btn-i:hover{background:rgba(255,255,255,0.07);color:#e2e8f0}
 .footer{display:none;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.015);flex-shrink:0}
 .footer-time{font-size:12px;color:rgba(255,255,255,0.4)}
