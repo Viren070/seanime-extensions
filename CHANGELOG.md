@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/Viren070/seanime-extensions/compare/v0.1.2...v0.1.3) (2026-04-16)
+
+
+### Bug Fixes
+
+* add readme/notes to manifest ([45cab3e](https://github.com/Viren070/seanime-extensions/commit/45cab3e7684b26bdb44c14a023f42ddf49dc7486))
+
 ## [0.1.2](https://github.com/Viren070/seanime-extensions/compare/v0.1.1...v0.1.2) (2026-04-16)
 
 
