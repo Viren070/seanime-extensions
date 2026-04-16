@@ -8,9 +8,10 @@
   "description": "AIOStreams bridge for Seanime anime torrent search.",
   "author": "Viren070",
   "icon": "https://cdn.jsdelivr.net/gh/selfhst/icons/png/aiostreams-light.png",
-  "website": "",
   "lang": "multi",
   "payloadURI": "",
+  "readme": "https://github.com/Viren070/seanime-extensions",
+  "notes": "You need an existing AIOStreams instance and configuration to use this plugin.",
   "isDevelopment": true,
   "userConfig": {
     "requiresConfig": true,
