@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/Viren070/seanime-extensions/compare/v0.1.1...v0.1.2) (2026-04-16)
+
+
+### Bug Fixes
+
+* **aiostreams-plugin:** decrease height of icon buttons in result view ([b0fd708](https://github.com/Viren070/seanime-extensions/commit/b0fd708daa3a8eda9a56d29a2ca282292e05374d))
+
 ## [0.1.1](https://github.com/Viren070/seanime-extensions/compare/v0.1.0...v0.1.1) (2026-04-16)
 
 
