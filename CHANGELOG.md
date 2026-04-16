@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/Viren070/seanime-extensions/compare/v0.1.3...v0.1.4) (2026-04-16)
+
+
+### Bug Fixes
+
+* only use foldername/filename when building magnet ([413900e](https://github.com/Viren070/seanime-extensions/commit/413900e616bba9dba15b0fb9277de180fc901bda))
+
 ## [0.1.3](https://github.com/Viren070/seanime-extensions/compare/v0.1.2...v0.1.3) (2026-04-16)
 
 
