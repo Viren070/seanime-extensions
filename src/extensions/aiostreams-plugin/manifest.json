@@ -11,6 +11,7 @@
   "lang": "multi",
   "payloadURI": "",
   "isDevelopment": true,
+  "website": "https://docs.aiostreams.viren070.me",
   "readme": "https://github.com/Viren070/seanime-extensions",
   "notes": "You need an existing AIOStreams instance and configuration to use this plugin.",
   "userConfig": {
