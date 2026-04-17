@@ -662,23 +662,25 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       const ep = pendingEp.get();
       if (!anime || !ep) return;
 
-      const useExt = prefBool("useExternalPlayer", false);
+      const playerMode = getPlayerModePref();
+      const title = anime.title?.userPreferred ?? "Unknown";
+      const windowTitle = `${title} - Episode ${ep.episodeNumber}`;
 
-      if (useExt) {
+      if (playerMode === "external") {
         ctx.externalPlayerLink.open(result.url, anime.id, ep.episodeNumber);
         hideResultsAnimated();
         resultsWv.channel.send("play-error", { index }); // Removes the loading spinner
         return;
       }
 
-      const title = anime.title?.userPreferred ?? "Unknown";
-      ctx.playback
-        .streamUsingMediaPlayer(
-          `${title} - Episode ${ep.episodeNumber}`,
-          result.url,
-          anime,
-          ep.aniDBEpisode,
-        )
+      const playPromise = ctx.playback.streamUsingMediaPlayer(
+        windowTitle,
+        result.url,
+        anime,
+        ep.aniDBEpisode,
+      );
+
+      playPromise
         .then(() => {
           hideResultsAnimated();
         })
@@ -1104,6 +1106,19 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
       return v === "true";
     }
 
+    function getPlayerModePref(): "desktop" | "external" {
+      const mode = ($getUserPreference("playerMode") ?? "").trim();
+      if (mode === "desktop" || mode === "external") {
+        return mode;
+      }
+
+      if (prefBool("useExternalPlayer", false)) {
+        return "external";
+      }
+
+      return "desktop";
+    }
+
     const episodePalette = ctx.newCommandPalette({
       placeholder: "Select an episode...",
     });
@@ -1238,10 +1253,7 @@ W.on('close-anim',function(){var p=document.getElementById('panel');if(p)p.class
           if (el.attributes["data-aio-observed"]) continue;
           el.setAttribute("data-aio-observed", "1");
 
-          const mediaId = parseInt(
-            el.attributes["data-media-id"] ?? "0",
-            10,
-          );
+          const mediaId = parseInt(el.attributes["data-media-id"] ?? "0", 10);
           const episodeNumber = parseInt(
             el.attributes["data-episode-number"] ?? "0",
             10,
