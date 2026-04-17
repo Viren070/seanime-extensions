@@ -1,3 +1,6 @@
+>[!WARNING]
+> The extensions provided here have migrated to the official [AIOStreams](https://github.com/Viren070/AIOStreams) repository. When configuring AIOStreams, there will be manifest URLs you can install to Seanime there. 
+
 # Seanime AIOStreams Extensions
 
 Bridge [AIOStreams](https://github.com/Viren070/AIOStreams) into Seanime with installable extensions.
