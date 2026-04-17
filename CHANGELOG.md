@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/Viren070/seanime-extensions/compare/v0.2.0...v0.3.0) (2026-04-17)
+
+
+### Features
+
+* **aiostreams-plugin:** add auto play first stream and auto open settings ([ef0e4cf](https://github.com/Viren070/seanime-extensions/commit/ef0e4cf43645eefa3279a997c352ae7733112210))
+
 ## [0.2.0](https://github.com/Viren070/seanime-extensions/compare/v0.1.4...v0.2.0) (2026-04-16)
 
 
